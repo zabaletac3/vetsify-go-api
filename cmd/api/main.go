@@ -1,15 +1,27 @@
+// @title       API de Veterinaria Multi-Tenant
+// @version     1.0
+// @description Esta es la documentación interactiva para la API de la veterinaria, construida en Go.
+//
+// @contact.name   Tu Nombre
+// @contact.email  tu.email@ejemplo.com
+//
+// @host        localhost:8080
+// @BasePath    /
 package main
 
 import (
 	"log/slog"
 	"os"
 
+	_ "github.com/zabaletac3/go-vet-api/docs"
+
+	"github.com/zabaletac3/go-vet-api/internal/config"
 	"github.com/zabaletac3/go-vet-api/internal/database"
 	customhttp "github.com/zabaletac3/go-vet-api/internal/transport/http"
-	"github.com/zabaletac3/go-vet-api/internal/transport/http/config"
 )
 
 func main() {
+
 	// 1. Creamos el logger primero.
 	logger := slog.New(slog.NewJSONHandler(os.Stdout, nil))
 	slog.SetDefault(logger) // Establecemos como logger global por defecto.
@@ -36,5 +48,6 @@ func main() {
 	server := customhttp.NewServer(cfg.Port, logger) // Pasamos el logger al servidor también.
 
 	customhttp.SetupAllRoutes(server.Mux, db, logger)
+
 	server.Start()
 }

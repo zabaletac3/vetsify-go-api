@@ -8,6 +8,8 @@ import (
 
 	"github.com/zabaletac3/go-vet-api/internal/transport/http/users"
 	"go.mongodb.org/mongo-driver/mongo"
+
+	httpSwagger "github.com/swaggo/http-swagger"
 )
 
 // SetupAllRoutes recibe las dependencias globales y las distribuye.
@@ -17,8 +19,18 @@ func SetupAllRoutes(mux *http.ServeMux, db *mongo.Database, logger *slog.Logger)
 	// Módulo de Usuarios
 	users.RegisterRoutes(mux, db, logger) // 👈 Añadimos la llamada
 
-	// Rutas Generales
+	// @Summary     Obtener información de salud
+	// @Description Endpoint para verificar el estado del servidor
+	// @Tags        health
+	// @Accept      json
+	// @Produce     json
+	// @Success     200 {object} map[string]string
+	// @Router      /health [get]
 	mux.HandleFunc("GET /health", handleHealthCheck(logger))
+	mux.HandleFunc("GET /test/", func(w http.ResponseWriter, r *http.Request) {
+		w.Write([]byte("La ruta de prueba funciona!"))
+	})
+	mux.HandleFunc("/swagger/", httpSwagger.WrapHandler) 
 }
 
 // handleHealthCheck ahora es una función privada dentro del paquete http.

@@ -8,6 +8,16 @@ import (
 	"github.com/zabaletac3/go-vet-api/internal/services"
 )
 
+// registerUserRequest define la estructura del cuerpo de la petición para el registro.
+// Lo definimos como un tipo para poder referenciarlo en la documentación de Swagger.
+type registerUserRequest struct {
+	ClinicID string `json:"clinicId" validate:"required"`
+	FullName string `json:"fullName" validate:"required"`
+	Email    string `json:"email" validate:"required,email"`
+	Password string `json:"password" validate:"required,min=8"`
+	Role     string `json:"role" validate:"required"`
+}
+
 // Handler contiene las dependencias para los handlers de usuario, en este caso, el servicio.
 type Handler struct {
 	service services.UserService
@@ -19,6 +29,17 @@ func NewHandler(svc services.UserService) *Handler {
 }
 
 // register es el método del handler para registrar un nuevo usuario.
+// @Summary      Registra un nuevo usuario
+// @Description  Crea un nuevo usuario (empleado) asociado a una clínica.
+// @Tags         Users
+// @Accept       json
+// @Produce      json
+// @Param        user  body      registerUserRequest  true  "Datos para el registro del usuario"
+// @Success      201   {object}  models.User
+// @Failure      400   {object}  map[string]string "Error: Petición inválida"
+// @Failure      409   {object}  map[string]string "Error: El email ya existe"
+// @Failure      500   {object}  map[string]string "Error: Error interno del servidor"
+// @Router       /api/v1/users/register [post]
 func (h *Handler) register(w http.ResponseWriter, r *http.Request) {
 	// DTO: Este struct representa el cuerpo JSON que esperamos en la petición.
 	// Es específico de esta capa HTTP.

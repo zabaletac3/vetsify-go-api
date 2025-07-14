@@ -31,6 +31,7 @@ func NewServer(port int, logger *slog.Logger) *Server {
 		logger: logger, 
 	}
 
+	
 	return server
 }
 

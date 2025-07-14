@@ -1,0 +1,92 @@
+basePath: /
+definitions:
+  models.User:
+    properties:
+      clinicId:
+        description: ¡El discriminador de Tenant!
+        type: string
+      createdAt:
+        type: string
+      email:
+        type: string
+      fullName:
+        type: string
+      id:
+        type: string
+      role:
+        description: 'ej: "admin", "vet"'
+        type: string
+      updatedAt:
+        type: string
+    type: object
+  users.registerUserRequest:
+    properties:
+      clinicId:
+        type: string
+      email:
+        type: string
+      fullName:
+        type: string
+      password:
+        minLength: 8
+        type: string
+      role:
+        type: string
+    required:
+    - clinicId
+    - email
+    - fullName
+    - password
+    - role
+    type: object
+host: localhost:8080
+info:
+  contact:
+    email: tu.email@ejemplo.com
+    name: Tu Nombre
+  description: Esta es la documentación interactiva para la API de la veterinaria,
+    construida en Go.
+  title: API de Veterinaria Multi-Tenant
+  version: "1.0"
+paths:
+  /api/v1/users/register:
+    post:
+      consumes:
+      - application/json
+      description: Crea un nuevo usuario (empleado) asociado a una clínica.
+      parameters:
+      - description: Datos para el registro del usuario
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/users.registerUserRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/models.User'
+        "400":
+          description: 'Error: Petición inválida'
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "409":
+          description: 'Error: El email ya existe'
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: 'Error: Error interno del servidor'
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Registra un nuevo usuario
+      tags:
+      - Users
+swagger: "2.0"
