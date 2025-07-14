@@ -4,7 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"log/slog" // 👈 1. Importamos slog
+	"log/slog"
 	"net/http"
 	"os"
 	"os/signal"
@@ -15,11 +15,11 @@ import (
 // Server ahora tiene su propia instancia de logger.
 type Server struct {
 	server *http.Server
-	logger *slog.Logger // 👈 2. Añadimos el campo para el logger
+	logger *slog.Logger 
 }
 
 // NewServer es el constructor que ahora recibe el logger como dependencia.
-func NewServer(port int, logger *slog.Logger) *Server { // 👈 3. Recibimos el logger
+func NewServer(port int, logger *slog.Logger) *Server { 
 	mux := http.NewServeMux()
 
 	server := &Server{
