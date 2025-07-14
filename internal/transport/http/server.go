@@ -2,7 +2,6 @@ package http
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"log/slog"
 	"net/http"
@@ -15,6 +14,7 @@ import (
 // Server ahora tiene su propia instancia de logger.
 type Server struct {
 	server *http.Server
+	Mux    *http.ServeMux 
 	logger *slog.Logger 
 }
 
@@ -27,18 +27,13 @@ func NewServer(port int, logger *slog.Logger) *Server {
 			Addr:    fmt.Sprintf(":%d", port),
 			Handler: mux,
 		},
-		logger: logger, // 👈 4. Asignamos el logger
+		Mux:    mux,
+		logger: logger, 
 	}
-
-	server.registerRoutes(mux)
 
 	return server
 }
 
-// registerRoutes ahora puede usar el logger del servidor si lo necesita.
-func (s *Server) registerRoutes(mux *http.ServeMux) {
-	mux.HandleFunc("GET /health", s.handleHealthCheck())
-}
 
 // Start ahora usa el logger estructurado.
 func (s *Server) Start() {
@@ -71,19 +66,4 @@ func (s *Server) gracefulShutdown() {
 	}
 
 	s.logger.Info("Servidor apagado exitosamente.")
-}
-
-// handleHealthCheck ahora usa el logger del struct Server (`s.logger`).
-func (s *Server) handleHealthCheck() http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		response := map[string]string{
-			"status":    "ok",
-			"timestamp": time.Now().UTC().Format(time.RFC3339),
-		}
-		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(http.StatusOK)
-		if err := json.NewEncoder(w).Encode(response); err != nil {
-			s.logger.Error("Error escribiendo respuesta de health check", "error", err)
-		}
-	}
 }

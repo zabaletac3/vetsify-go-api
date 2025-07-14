@@ -34,5 +34,7 @@ func main() {
 
 	// 4. Creamos e iniciamos el servidor.
 	server := customhttp.NewServer(cfg.Port, logger) // Pasamos el logger al servidor también.
+
+	customhttp.SetupAllRoutes(server.Mux, db, logger)
 	server.Start()
 }

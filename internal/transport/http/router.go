@@ -1,0 +1,37 @@
+package http
+
+import (
+	"encoding/json"
+	"log/slog"
+	"net/http"
+	"time"
+
+	"github.com/zabaletac3/go-vet-api/internal/transport/http/users"
+	"go.mongodb.org/mongo-driver/mongo"
+)
+
+// SetupAllRoutes recibe las dependencias globales y las distribuye.
+func SetupAllRoutes(mux *http.ServeMux, db *mongo.Database, logger *slog.Logger) {
+
+	
+	// Módulo de Usuarios
+	users.RegisterRoutes(mux, db, logger) // 👈 Añadimos la llamada
+
+	// Rutas Generales
+	mux.HandleFunc("GET /health", handleHealthCheck(logger))
+}
+
+// handleHealthCheck ahora es una función privada dentro del paquete http.
+func handleHealthCheck(logger *slog.Logger) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		response := map[string]string{
+			"status":    "ok, go!",
+			"timestamp": time.Now().UTC().Format(time.RFC3339),
+		}
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusOK)
+		if err := json.NewEncoder(w).Encode(response); err != nil {
+			logger.Error("Error escribiendo respuesta de health check", "error", err)
+		}
+	}
+}
