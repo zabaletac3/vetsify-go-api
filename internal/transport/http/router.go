@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/zabaletac3/go-vet-api/internal/transport/http/clinics"
 	"github.com/zabaletac3/go-vet-api/internal/transport/http/users"
 	"go.mongodb.org/mongo-driver/mongo"
 
@@ -18,6 +19,9 @@ func SetupAllRoutes(mux *http.ServeMux, db *mongo.Database, logger *slog.Logger)
 	
 	// Módulo de Usuarios
 	users.RegisterRoutes(mux, db, logger) // 👈 Añadimos la llamada
+
+	// Módulo de Clínicas
+	clinics.RegisterRoutes(mux, db, logger)
 
 	// @Summary     Obtener información de salud
 	// @Description Endpoint para verificar el estado del servidor

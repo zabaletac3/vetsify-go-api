@@ -1,5 +1,20 @@
 basePath: /
 definitions:
+  models.Clinic:
+    properties:
+      address:
+        type: string
+      createdAt:
+        type: string
+      id:
+        type: string
+      name:
+        type: string
+      phone:
+        type: string
+      updatedAt:
+        type: string
+    type: object
   models.User:
     properties:
       clinicId:
@@ -17,6 +32,15 @@ definitions:
         description: 'ej: "admin", "vet"'
         type: string
       updatedAt:
+        type: string
+    type: object
+  services.CreateClinicParams:
+    properties:
+      address:
+        type: string
+      name:
+        type: string
+      phone:
         type: string
     type: object
   users.registerUserRequest:
@@ -49,6 +73,65 @@ info:
   title: API de Veterinaria Multi-Tenant
   version: "1.0"
 paths:
+  /api/v1/clinics:
+    post:
+      consumes:
+      - application/json
+      description: Registra una nueva clínica (tenant) en el sistema.
+      parameters:
+      - description: Datos para crear la clínica
+        in: body
+        name: clinic
+        required: true
+        schema:
+          $ref: '#/definitions/services.CreateClinicParams'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/models.Clinic'
+        "400":
+          description: 'Error: Petición inválida'
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: 'Error: Error interno del servidor'
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Crea una nueva clínica
+      tags:
+      - Clinics
+  /api/v1/clinics/{id}:
+    get:
+      description: Recupera los detalles de una clínica específica usando su ID.
+      parameters:
+      - description: ID de la Clínica
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Clinic'
+        "404":
+          description: 'Error: Clínica no encontrada'
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Obtiene una clínica por ID
+      tags:
+      - Clinics
   /api/v1/users/register:
     post:
       consumes:
