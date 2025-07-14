@@ -9,6 +9,8 @@ import (
 	"os/signal"
 	"syscall"
 	"time"
+
+	"github.com/go-playground/validator/v10"
 )
 
 // Server ahora tiene su propia instancia de logger.
@@ -16,6 +18,7 @@ type Server struct {
 	server *http.Server
 	Mux    *http.ServeMux 
 	logger *slog.Logger 
+	validate *validator.Validate
 }
 
 // NewServer es el constructor que ahora recibe el logger como dependencia.
@@ -29,6 +32,7 @@ func NewServer(port int, logger *slog.Logger) *Server {
 		},
 		Mux:    mux,
 		logger: logger, 
+		validate: validator.New(),
 	}
 
 	

@@ -15,6 +15,8 @@ import (
 
 	_ "github.com/zabaletac3/go-vet-api/docs"
 
+	_ "github.com/zabaletac3/go-vet-api/internal/validators"
+
 	"github.com/zabaletac3/go-vet-api/internal/config"
 	"github.com/zabaletac3/go-vet-api/internal/database"
 	customhttp "github.com/zabaletac3/go-vet-api/internal/transport/http"
@@ -23,8 +25,11 @@ import (
 func main() {
 
 	// 1. Creamos el logger primero.
-	logger := slog.New(slog.NewJSONHandler(os.Stdout, nil))
-	slog.SetDefault(logger) // Establecemos como logger global por defecto.
+	logger := slog.New(slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{
+		Level: slog.LevelInfo,
+	}))
+	slog.SetDefault(logger)
+
 
 	// 2. Cargamos la configuración.
 	cfg := config.Load()
@@ -47,7 +52,13 @@ func main() {
 	// 4. Creamos e iniciamos el servidor.
 	server := customhttp.NewServer(cfg.Port, logger) // Pasamos el logger al servidor también.
 
-	customhttp.SetupAllRoutes(server.Mux, db, logger)
+	// sigChan := make(chan os.Signal, 1)
+	// signal.Notify(sigChan, syscall.SIGINT, syscall.SIGTERM)
+
+	// <-sigChan
+	// logger.Info("Cerrando servidor...")
+
+	customhttp.SetupAllRoutes(server.Mux, db, logger,)
 
 	server.Start()
 }

@@ -34,6 +34,13 @@ definitions:
       updatedAt:
         type: string
     type: object
+  response.ErrorResponse:
+    properties:
+      error:
+        type: string
+      message:
+        type: string
+    type: object
   services.CreateClinicParams:
     properties:
       address:
@@ -126,9 +133,11 @@ paths:
         "404":
           description: 'Error: Clínica no encontrada'
           schema:
-            additionalProperties:
-              type: string
-            type: object
+            $ref: '#/definitions/response.ErrorResponse'
+        "500":
+          description: 'Error: Error interno del servidor'
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
       summary: Obtiene una clínica por ID
       tags:
       - Clinics

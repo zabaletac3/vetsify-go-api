@@ -16,9 +16,9 @@ import (
 // SetupAllRoutes recibe las dependencias globales y las distribuye.
 func SetupAllRoutes(mux *http.ServeMux, db *mongo.Database, logger *slog.Logger) {
 
-	
+
 	// Módulo de Usuarios
-	users.RegisterRoutes(mux, db, logger) // 👈 Añadimos la llamada
+	users.RegisterRoutes(mux, db, logger)
 
 	// Módulo de Clínicas
 	clinics.RegisterRoutes(mux, db, logger)
