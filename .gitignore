@@ -1,0 +1,13 @@
+# Archivo de variables de entorno locales. ¡NUNCA subir a Git!
+.env
+
+# Directorios de dependencias y builds
+vendor/
+bin/
+
+# Binario compilado (el nombre que le damos al compilar)
+go-vet-api-v2
+
+# Archivos del sistema operativo
+.DS_Store
+Thumbs.db
