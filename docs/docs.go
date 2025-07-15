@@ -10,8 +10,8 @@ const docTemplate = `{
         "description": "{{escape .Description}}",
         "title": "{{.Title}}",
         "contact": {
-            "name": "Tu Nombre",
-            "email": "tu.email@ejemplo.com"
+            "name": "API Support",
+            "email": "support@vetapi.com"
         },
         "version": "{{.Version}}"
     },
@@ -19,8 +19,76 @@ const docTemplate = `{
     "basePath": "{{.BasePath}}",
     "paths": {
         "/api/v1/clinics": {
+            "get": {
+                "description": "Retrieve a paginated list of all clinics",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Clinics"
+                ],
+                "summary": "Get all clinics",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Page number (default: 1)",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Items per page (default: 10, max: 100)",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Search term",
+                        "name": "search",
+                        "in": "query"
+                    },
+                    {
+                        "type": "boolean",
+                        "description": "Filter by active status",
+                        "name": "is_active",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Sort field (name, display_name, created_at, updated_at)",
+                        "name": "sort_by",
+                        "in": "query"
+                    },
+                    {
+                        "type": "boolean",
+                        "description": "Sort descending",
+                        "name": "sort_desc",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/clinics.ListClinicsResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid parameters",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    }
+                }
+            },
             "post": {
-                "description": "Registra una nueva clínica (tenant) en el sistema.",
+                "description": "Register a new clinic (tenant) in the system with color palette",
                 "consumes": [
                     "application/json"
                 ],
@@ -30,15 +98,15 @@ const docTemplate = `{
                 "tags": [
                     "Clinics"
                 ],
-                "summary": "Crea una nueva clínica",
+                "summary": "Create a new clinic",
                 "parameters": [
                     {
-                        "description": "Datos para crear la clínica",
+                        "description": "Clinic data",
                         "name": "clinic",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/services.CreateClinicParams"
+                            "$ref": "#/definitions/clinics.CreateClinicRequest"
                         }
                     }
                 ],
@@ -46,17 +114,23 @@ const docTemplate = `{
                     "201": {
                         "description": "Created",
                         "schema": {
-                            "$ref": "#/definitions/models.Clinic"
+                            "$ref": "#/definitions/clinics.ClinicResponse"
                         }
                     },
                     "400": {
-                        "description": "Error: Petición inválida",
+                        "description": "Invalid data",
+                        "schema": {
+                            "$ref": "#/definitions/response.ValidationErrorResponse"
+                        }
+                    },
+                    "409": {
+                        "description": "Name already exists",
                         "schema": {
                             "$ref": "#/definitions/response.ErrorResponse"
                         }
                     },
                     "500": {
-                        "description": "Error: Error interno del servidor",
+                        "description": "Internal server error",
                         "schema": {
                             "$ref": "#/definitions/response.ErrorResponse"
                         }
@@ -66,18 +140,18 @@ const docTemplate = `{
         },
         "/api/v1/clinics/{id}": {
             "get": {
-                "description": "Recupera los detalles de una clínica específica usando su ID.",
+                "description": "Retrieve a specific clinic using its ID",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
                     "Clinics"
                 ],
-                "summary": "Obtiene una clínica por ID",
+                "summary": "Get clinic by ID",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "ID de la Clínica",
+                        "description": "Clinic ID",
                         "name": "id",
                         "in": "path",
                         "required": true
@@ -87,17 +161,131 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/models.Clinic"
+                            "$ref": "#/definitions/clinics.ClinicResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid ID",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
                         }
                     },
                     "404": {
-                        "description": "Error: Clínica no encontrada",
+                        "description": "Clinic not found",
                         "schema": {
                             "$ref": "#/definitions/response.ErrorResponse"
                         }
                     },
                     "500": {
-                        "description": "Error: Error interno del servidor",
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "description": "Delete a clinic from the system (soft delete - marks as inactive)",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Clinics"
+                ],
+                "summary": "Delete clinic",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Clinic ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Clinic deleted successfully",
+                        "schema": {
+                            "$ref": "#/definitions/response.SuccessResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid ID",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Clinic not found",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "patch": {
+                "description": "Partially update an existing clinic's data (only provided fields)",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Clinics"
+                ],
+                "summary": "Update clinic (partial)",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Clinic ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Fields to update (partial)",
+                        "name": "clinic",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/clinics.UpdateClinicRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/clinics.ClinicResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid data",
+                        "schema": {
+                            "$ref": "#/definitions/response.ValidationErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Clinic not found",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    },
+                    "409": {
+                        "description": "Name already exists",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
                         "schema": {
                             "$ref": "#/definitions/response.ErrorResponse"
                         }
@@ -168,7 +356,7 @@ const docTemplate = `{
         }
     },
     "definitions": {
-        "models.Clinic": {
+        "clinics.ClinicResponse": {
             "type": "object",
             "properties": {
                 "address": {
@@ -177,17 +365,195 @@ const docTemplate = `{
                 "createdAt": {
                     "type": "string"
                 },
+                "description": {
+                    "type": "string"
+                },
+                "displayName": {
+                    "type": "string"
+                },
+                "email": {
+                    "type": "string"
+                },
                 "id": {
                     "type": "string"
                 },
+                "isActive": {
+                    "type": "boolean"
+                },
                 "name": {
                     "type": "string"
+                },
+                "palette": {
+                    "$ref": "#/definitions/clinics.ColorPaletteResponse"
                 },
                 "phone": {
                     "type": "string"
                 },
                 "updatedAt": {
                     "type": "string"
+                },
+                "website": {
+                    "type": "string"
+                }
+            }
+        },
+        "clinics.ColorPaletteDTO": {
+            "type": "object",
+            "properties": {
+                "background": {
+                    "type": "string"
+                },
+                "primary": {
+                    "type": "string"
+                },
+                "quaternary": {
+                    "type": "string"
+                },
+                "secondary": {
+                    "type": "string"
+                },
+                "tertiary": {
+                    "type": "string"
+                }
+            }
+        },
+        "clinics.ColorPaletteResponse": {
+            "type": "object",
+            "properties": {
+                "background": {
+                    "type": "string"
+                },
+                "primary": {
+                    "type": "string"
+                },
+                "quaternary": {
+                    "type": "string"
+                },
+                "secondary": {
+                    "type": "string"
+                },
+                "tertiary": {
+                    "type": "string"
+                }
+            }
+        },
+        "clinics.CreateClinicRequest": {
+            "type": "object",
+            "required": [
+                "displayName",
+                "name"
+            ],
+            "properties": {
+                "address": {
+                    "type": "string",
+                    "maxLength": 200,
+                    "minLength": 5
+                },
+                "description": {
+                    "type": "string",
+                    "maxLength": 500
+                },
+                "displayName": {
+                    "type": "string",
+                    "maxLength": 150,
+                    "minLength": 2
+                },
+                "email": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string",
+                    "maxLength": 100,
+                    "minLength": 2
+                },
+                "palette": {
+                    "$ref": "#/definitions/clinics.ColorPaletteDTO"
+                },
+                "phone": {
+                    "type": "string",
+                    "maxLength": 20,
+                    "minLength": 7
+                },
+                "website": {
+                    "type": "string"
+                }
+            }
+        },
+        "clinics.ListClinicsResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/clinics.ClinicResponse"
+                    }
+                },
+                "pagination": {
+                    "$ref": "#/definitions/dto.PaginationResponse"
+                }
+            }
+        },
+        "clinics.UpdateClinicRequest": {
+            "type": "object",
+            "properties": {
+                "address": {
+                    "type": "string",
+                    "maxLength": 200,
+                    "minLength": 5
+                },
+                "description": {
+                    "type": "string",
+                    "maxLength": 500
+                },
+                "displayName": {
+                    "type": "string",
+                    "maxLength": 150,
+                    "minLength": 2
+                },
+                "email": {
+                    "type": "string"
+                },
+                "isActive": {
+                    "type": "boolean"
+                },
+                "name": {
+                    "type": "string",
+                    "maxLength": 100,
+                    "minLength": 2
+                },
+                "palette": {
+                    "$ref": "#/definitions/clinics.ColorPaletteDTO"
+                },
+                "phone": {
+                    "type": "string",
+                    "maxLength": 20,
+                    "minLength": 7
+                },
+                "website": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.PaginationResponse": {
+            "type": "object",
+            "properties": {
+                "currentPage": {
+                    "type": "integer"
+                },
+                "hasNext": {
+                    "type": "boolean"
+                },
+                "hasPrev": {
+                    "type": "boolean"
+                },
+                "perPage": {
+                    "type": "integer"
+                },
+                "total": {
+                    "type": "integer"
+                },
+                "totalPages": {
+                    "type": "integer"
                 }
             }
         },
@@ -230,16 +596,45 @@ const docTemplate = `{
                 }
             }
         },
-        "services.CreateClinicParams": {
+        "response.SuccessResponse": {
             "type": "object",
             "properties": {
-                "address": {
+                "data": {},
+                "message": {
                     "type": "string"
                 },
-                "name": {
+                "success": {
+                    "type": "boolean"
+                }
+            }
+        },
+        "response.ValidationError": {
+            "type": "object",
+            "properties": {
+                "field": {
                     "type": "string"
                 },
-                "phone": {
+                "message": {
+                    "type": "string"
+                },
+                "value": {
+                    "type": "string"
+                }
+            }
+        },
+        "response.ValidationErrorResponse": {
+            "type": "object",
+            "properties": {
+                "error": {
+                    "type": "string"
+                },
+                "fields": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/response.ValidationError"
+                    }
+                },
+                "message": {
                     "type": "string"
                 }
             }
@@ -281,8 +676,8 @@ var SwaggerInfo = &swag.Spec{
 	Host:             "localhost:8080",
 	BasePath:         "/",
 	Schemes:          []string{},
-	Title:            "API de Veterinaria Multi-Tenant",
-	Description:      "Esta es la documentación interactiva para la API de la veterinaria, construida en Go.",
+	Title:            "Veterinary API Multi-Tenant",
+	Description:      "Interactive documentation for the veterinary API, built in Go with multi-tenant support.",
 	InfoInstanceName: "swagger",
 	SwaggerTemplate:  docTemplate,
 	LeftDelim:        "{{",

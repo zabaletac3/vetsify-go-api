@@ -1,9 +1,9 @@
-// @title       API de Veterinaria Multi-Tenant
+// @title       Veterinary API Multi-Tenant
 // @version     1.0
-// @description Esta es la documentación interactiva para la API de la veterinaria, construida en Go.
+// @description Interactive documentation for the veterinary API, built in Go with multi-tenant support.
 //
-// @contact.name   Tu Nombre
-// @contact.email  tu.email@ejemplo.com
+// @contact.name   API Support
+// @contact.email  support@vetapi.com
 //
 // @host        localhost:8080
 // @BasePath    /

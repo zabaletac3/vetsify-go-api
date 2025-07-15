@@ -47,6 +47,9 @@ func registerCustomValidators() {
 	
 	// Validador para fechas en formato ISO 8601
 	validate.RegisterValidation("datetime", validateDateTime)
+
+	// Registrar validadores específicos de clínicas
+    RegisterClinicValidators(validate)
 }
 
 // validateStrongPassword valida que la contraseña tenga al menos una mayúscula, 

@@ -1,19 +1,142 @@
 basePath: /
 definitions:
-  models.Clinic:
+  clinics.ClinicResponse:
     properties:
       address:
         type: string
       createdAt:
         type: string
+      description:
+        type: string
+      displayName:
+        type: string
+      email:
+        type: string
       id:
         type: string
+      isActive:
+        type: boolean
       name:
         type: string
+      palette:
+        $ref: '#/definitions/clinics.ColorPaletteResponse'
       phone:
         type: string
       updatedAt:
         type: string
+      website:
+        type: string
+    type: object
+  clinics.ColorPaletteDTO:
+    properties:
+      background:
+        type: string
+      primary:
+        type: string
+      quaternary:
+        type: string
+      secondary:
+        type: string
+      tertiary:
+        type: string
+    type: object
+  clinics.ColorPaletteResponse:
+    properties:
+      background:
+        type: string
+      primary:
+        type: string
+      quaternary:
+        type: string
+      secondary:
+        type: string
+      tertiary:
+        type: string
+    type: object
+  clinics.CreateClinicRequest:
+    properties:
+      address:
+        maxLength: 200
+        minLength: 5
+        type: string
+      description:
+        maxLength: 500
+        type: string
+      displayName:
+        maxLength: 150
+        minLength: 2
+        type: string
+      email:
+        type: string
+      name:
+        maxLength: 100
+        minLength: 2
+        type: string
+      palette:
+        $ref: '#/definitions/clinics.ColorPaletteDTO'
+      phone:
+        maxLength: 20
+        minLength: 7
+        type: string
+      website:
+        type: string
+    required:
+    - displayName
+    - name
+    type: object
+  clinics.ListClinicsResponse:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/clinics.ClinicResponse'
+        type: array
+      pagination:
+        $ref: '#/definitions/dto.PaginationResponse'
+    type: object
+  clinics.UpdateClinicRequest:
+    properties:
+      address:
+        maxLength: 200
+        minLength: 5
+        type: string
+      description:
+        maxLength: 500
+        type: string
+      displayName:
+        maxLength: 150
+        minLength: 2
+        type: string
+      email:
+        type: string
+      isActive:
+        type: boolean
+      name:
+        maxLength: 100
+        minLength: 2
+        type: string
+      palette:
+        $ref: '#/definitions/clinics.ColorPaletteDTO'
+      phone:
+        maxLength: 20
+        minLength: 7
+        type: string
+      website:
+        type: string
+    type: object
+  dto.PaginationResponse:
+    properties:
+      currentPage:
+        type: integer
+      hasNext:
+        type: boolean
+      hasPrev:
+        type: boolean
+      perPage:
+        type: integer
+      total:
+        type: integer
+      totalPages:
+        type: integer
     type: object
   models.User:
     properties:
@@ -41,13 +164,32 @@ definitions:
       message:
         type: string
     type: object
-  services.CreateClinicParams:
+  response.SuccessResponse:
     properties:
-      address:
+      data: {}
+      message:
         type: string
-      name:
+      success:
+        type: boolean
+    type: object
+  response.ValidationError:
+    properties:
+      field:
         type: string
-      phone:
+      message:
+        type: string
+      value:
+        type: string
+    type: object
+  response.ValidationErrorResponse:
+    properties:
+      error:
+        type: string
+      fields:
+        items:
+          $ref: '#/definitions/response.ValidationError'
+        type: array
+      message:
         type: string
     type: object
   users.registerUserRequest:
@@ -73,48 +215,127 @@ definitions:
 host: localhost:8080
 info:
   contact:
-    email: tu.email@ejemplo.com
-    name: Tu Nombre
-  description: Esta es la documentación interactiva para la API de la veterinaria,
-    construida en Go.
-  title: API de Veterinaria Multi-Tenant
+    email: support@vetapi.com
+    name: API Support
+  description: Interactive documentation for the veterinary API, built in Go with
+    multi-tenant support.
+  title: Veterinary API Multi-Tenant
   version: "1.0"
 paths:
   /api/v1/clinics:
+    get:
+      description: Retrieve a paginated list of all clinics
+      parameters:
+      - description: 'Page number (default: 1)'
+        in: query
+        name: page
+        type: integer
+      - description: 'Items per page (default: 10, max: 100)'
+        in: query
+        name: limit
+        type: integer
+      - description: Search term
+        in: query
+        name: search
+        type: string
+      - description: Filter by active status
+        in: query
+        name: is_active
+        type: boolean
+      - description: Sort field (name, display_name, created_at, updated_at)
+        in: query
+        name: sort_by
+        type: string
+      - description: Sort descending
+        in: query
+        name: sort_desc
+        type: boolean
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/clinics.ListClinicsResponse'
+        "400":
+          description: Invalid parameters
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      summary: Get all clinics
+      tags:
+      - Clinics
     post:
       consumes:
       - application/json
-      description: Registra una nueva clínica (tenant) en el sistema.
+      description: Register a new clinic (tenant) in the system with color palette
       parameters:
-      - description: Datos para crear la clínica
+      - description: Clinic data
         in: body
         name: clinic
         required: true
         schema:
-          $ref: '#/definitions/services.CreateClinicParams'
+          $ref: '#/definitions/clinics.CreateClinicRequest'
       produces:
       - application/json
       responses:
         "201":
           description: Created
           schema:
-            $ref: '#/definitions/models.Clinic'
+            $ref: '#/definitions/clinics.ClinicResponse'
         "400":
-          description: 'Error: Petición inválida'
+          description: Invalid data
+          schema:
+            $ref: '#/definitions/response.ValidationErrorResponse'
+        "409":
+          description: Name already exists
           schema:
             $ref: '#/definitions/response.ErrorResponse'
         "500":
-          description: 'Error: Error interno del servidor'
+          description: Internal server error
           schema:
             $ref: '#/definitions/response.ErrorResponse'
-      summary: Crea una nueva clínica
+      summary: Create a new clinic
       tags:
       - Clinics
   /api/v1/clinics/{id}:
-    get:
-      description: Recupera los detalles de una clínica específica usando su ID.
+    delete:
+      description: Delete a clinic from the system (soft delete - marks as inactive)
       parameters:
-      - description: ID de la Clínica
+      - description: Clinic ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Clinic deleted successfully
+          schema:
+            $ref: '#/definitions/response.SuccessResponse'
+        "400":
+          description: Invalid ID
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "404":
+          description: Clinic not found
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      summary: Delete clinic
+      tags:
+      - Clinics
+    get:
+      description: Retrieve a specific clinic using its ID
+      parameters:
+      - description: Clinic ID
         in: path
         name: id
         required: true
@@ -125,16 +346,62 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/models.Clinic'
+            $ref: '#/definitions/clinics.ClinicResponse'
+        "400":
+          description: Invalid ID
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
         "404":
-          description: 'Error: Clínica no encontrada'
+          description: Clinic not found
           schema:
             $ref: '#/definitions/response.ErrorResponse'
         "500":
-          description: 'Error: Error interno del servidor'
+          description: Internal server error
           schema:
             $ref: '#/definitions/response.ErrorResponse'
-      summary: Obtiene una clínica por ID
+      summary: Get clinic by ID
+      tags:
+      - Clinics
+    patch:
+      consumes:
+      - application/json
+      description: Partially update an existing clinic's data (only provided fields)
+      parameters:
+      - description: Clinic ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Fields to update (partial)
+        in: body
+        name: clinic
+        required: true
+        schema:
+          $ref: '#/definitions/clinics.UpdateClinicRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/clinics.ClinicResponse'
+        "400":
+          description: Invalid data
+          schema:
+            $ref: '#/definitions/response.ValidationErrorResponse'
+        "404":
+          description: Clinic not found
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "409":
+          description: Name already exists
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      summary: Update clinic (partial)
       tags:
       - Clinics
   /api/v1/users/register:
