@@ -102,15 +102,11 @@ paths:
         "400":
           description: 'Error: Petición inválida'
           schema:
-            additionalProperties:
-              type: string
-            type: object
+            $ref: '#/definitions/response.ErrorResponse'
         "500":
           description: 'Error: Error interno del servidor'
           schema:
-            additionalProperties:
-              type: string
-            type: object
+            $ref: '#/definitions/response.ErrorResponse'
       summary: Crea una nueva clínica
       tags:
       - Clinics

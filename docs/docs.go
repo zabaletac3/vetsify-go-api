@@ -52,19 +52,13 @@ const docTemplate = `{
                     "400": {
                         "description": "Error: Petición inválida",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
+                            "$ref": "#/definitions/response.ErrorResponse"
                         }
                     },
                     "500": {
                         "description": "Error: Error interno del servidor",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
+                            "$ref": "#/definitions/response.ErrorResponse"
                         }
                     }
                 }
